@@ -12,6 +12,7 @@
 static NSTimeInterval const ANIMATION_TIME_TO_CENTER = 0.5;
 static NSTimeInterval const ANIMATION_TIME_TO_EDGE = ANIMATION_TIME_TO_CENTER * 1.5;
 static CGFloat const EDGE_SCALE = 0.4;
+static CGFloat const ALPHA_STEP = 0.3;
 
 @interface HMLadderViews ()
 @property (strong, nonatomic) UIView* holder;
@@ -22,6 +23,9 @@ static CGFloat const EDGE_SCALE = 0.4;
 @property (nonatomic) CGSize windowSize;
 @property (nonatomic) float offsetTop;
 @property (nonatomic) float offsetBottom;
+@property (nonatomic) BOOL useTopNavButton;
+@property (nonatomic) BOOL useBottomNavButton;
+@property (nonatomic) BOOL fadeViewsOutOfCenter;
 @end
 
 @implementation HMLadderViews
@@ -38,7 +42,7 @@ static CGFloat const EDGE_SCALE = 0.4;
 - (UIButton*)itemButtonBottom
 {
     if (!_itemButtonBottom) {
-        _itemButtonBottom = [UIButton buttonWithType:UIButtonTypeRoundedRect];//[[UIButton alloc] init];
+        _itemButtonBottom = [UIButton buttonWithType:UIButtonTypeRoundedRect]; //[[UIButton alloc] init];
         [_itemButtonBottom addTarget:self action:@selector(showNext) forControlEvents:UIControlEventTouchUpInside];
     }
     return _itemButtonBottom;
@@ -47,7 +51,7 @@ static CGFloat const EDGE_SCALE = 0.4;
 - (UIButton*)itemButtonTop
 {
     if (!_itemButtonTop) {
-        _itemButtonTop = [UIButton buttonWithType:UIButtonTypeRoundedRect];//[[UIButton alloc] init];
+        _itemButtonTop = [UIButton buttonWithType:UIButtonTypeRoundedRect]; //[[UIButton alloc] init];
         [_itemButtonTop addTarget:self action:@selector(showPrevious) forControlEvents:UIControlEventTouchUpInside];
     }
     return _itemButtonTop;
@@ -55,14 +59,23 @@ static CGFloat const EDGE_SCALE = 0.4;
 
 #pragma public
 
-- (instancetype)initWithViews:(NSArray*)views andHolder:(UIView*)holder andTopOffset:(CGFloat)topOffset andBottomOffset:(CGFloat)bottomOffset
+- (instancetype)initWithViews:(NSArray*)views
+                    andHolder:(UIView*)holder
+                 andTopOffset:(CGFloat)topOffset
+              andBottomOffset:(CGFloat)bottomOffset
+              useTopNavButton:(BOOL)useTopNavButton
+           useBottomNavButton:(BOOL)useBottomNavButton
+         fadeViewsOutOfCenter:(BOOL)fadeViewsOutOfCenter
 {
     if (self = [super init]) {
         self.holder = holder;
         self.views = views;
         self.offsetTop = topOffset;
         self.offsetBottom = bottomOffset;
-        
+        self.useTopNavButton = useTopNavButton;
+        self.useBottomNavButton = useBottomNavButton;
+        self.fadeViewsOutOfCenter = fadeViewsOutOfCenter;
+
         [holder addSubview:self.itemButtonTop];
         [holder addSubview:self.itemButtonBottom];
     }
@@ -91,11 +104,12 @@ static CGFloat const EDGE_SCALE = 0.4;
         BOOL firstAtEdge = true;
         CGFloat priorViewEdgeY = 0;
         CGFloat viewScaledHeightHalf;
+        CGFloat alpha = 1;
 
         // move to center
         view = [self.views objectAtIndex:index];
         coords.y = wHeight / 2;
-        [self animateView:view toCoods:coords withTime:animationTime withScale:1];
+        [self animateView:view toCoods:coords withTime:animationTime withScale:1 withAlpha:alpha];
 
         // align above
         for (int i = index - 1; i >= 0; i--) {
@@ -103,36 +117,41 @@ static CGFloat const EDGE_SCALE = 0.4;
             viewScaledHeightHalf = [self viewScaledHeight:view] / 2;
             if (firstAtEdge) {
                 coords.y = self.offsetTop + viewScaledHeightHalf;
-                [self setTopButtonToView:view atCoords:coords];
+                if (self.useTopNavButton)
+                    [self setTopButtonToView:view atCoords:coords];
             } else {
                 coords.y = priorViewEdgeY - viewScaledHeightHalf; // move off screen
             }
             firstAtEdge = false;
             priorViewEdgeY = coords.y - viewScaledHeightHalf;
-            [self animateView:view toCoods:coords withTime:animationTime withScale:EDGE_SCALE];
+            alpha = self.fadeViewsOutOfCenter ? alpha - ALPHA_STEP : 1;
+            [self animateView:view toCoods:coords withTime:animationTime withScale:EDGE_SCALE withAlpha:alpha];
         }
 
         // align bottom
         firstAtEdge = true;
+        alpha = 1;
         for (int i = index + 1; i < [self.views count]; i++) {
             view = [self.views objectAtIndex:i];
             viewScaledHeightHalf = [self viewScaledHeight:view] / 2;
             if (firstAtEdge) {
                 coords.y = wHeight - viewScaledHeightHalf - self.offsetBottom;
-                [self setBottomButtonToView:view atCoords:coords];
+                if (self.useBottomNavButton)
+                    [self setBottomButtonToView:view atCoords:coords];
             } else {
                 coords.y = priorViewEdgeY + viewScaledHeightHalf; // move off screen
             }
             firstAtEdge = false;
             priorViewEdgeY = coords.y + viewScaledHeightHalf;
-            [self animateView:view toCoods:coords withTime:animationTime withScale:EDGE_SCALE];
+            alpha = self.fadeViewsOutOfCenter ? alpha - ALPHA_STEP : 1;
+            [self animateView:view toCoods:coords withTime:animationTime withScale:EDGE_SCALE withAlpha:alpha];
         }
     }
 }
 
 - (void)showNext
 {
-    if (self.currentViewIndex+1 >= [self.views count]) // reached the limit
+    if (self.currentViewIndex + 1 >= [self.views count]) // reached the limit
         [self bounceCurrentView:-20];
     else
         [self showViewIndex:self.currentViewIndex + 1];
@@ -140,20 +159,20 @@ static CGFloat const EDGE_SCALE = 0.4;
 
 - (void)showPrevious
 {
-    if (self.currentViewIndex-1 < 0)
+    if (self.currentViewIndex - 1 < 0)
         [self bounceCurrentView:20];
     else
         [self showViewIndex:self.currentViewIndex - 1];
 }
 
--(void)bounceCurrentView:(CGFloat)yOffset
+- (void)bounceCurrentView:(CGFloat)yOffset
 {
     UIView* view = [self.views objectAtIndex:self.currentViewIndex];
     CGFloat originalY = view.center.y;
     CGFloat toY = originalY + yOffset;
     NSTimeInterval duration = 0.3;
     [HMBasicAnimation animate:view.layer toValue:@(toY) duration:duration delaySeconds:0.0 keyPath:HMBasicAnimation_POSITION_Y withEase:HMBasicAnimation_EASING_EASE_IN_OUT];
-    [HMBasicAnimation animate:view.layer toValue:@(originalY) duration:duration/2 delaySeconds:duration keyPath:HMBasicAnimation_POSITION_Y withEase:HMBasicAnimation_EASING_EASE_IN_OUT];
+    [HMBasicAnimation animate:view.layer toValue:@(originalY) duration:duration / 2 delaySeconds:duration keyPath:HMBasicAnimation_POSITION_Y withEase:HMBasicAnimation_EASING_EASE_IN_OUT];
 }
 
 #pragma helpers
@@ -187,20 +206,24 @@ static CGFloat const EDGE_SCALE = 0.4;
     button.frame = CGRectMake(0,
                               0,
                               self.windowSize.width,
-                              self.offsetTop+[self viewScaledHeight:view]);
+                              self.offsetTop + [self viewScaledHeight:view]);
 }
 
 - (void)animateView:(UIView*)view
             toCoods:(CGPoint)coords
            withTime:(NSTimeInterval)time
           withScale:(CGFloat)scale
+          withAlpha:(CGFloat)alpha
 {
+    if (alpha < 0)
+        alpha = 0;
     void (^animate)(id toValue, NSString * key) = ^void(id toValue, NSString* key) {
             [HMBasicAnimation animate:view.layer toValue:toValue duration:time delaySeconds:0 keyPath:key withEase:HMBasicAnimation_EASING_EASE_IN_OUT];
     };
     animate(@(coords.x), HMBasicAnimation_POSITION_X);
     animate(@(coords.y), HMBasicAnimation_POSITION_Y);
     animate(@(scale), HMBasicAnimation_SCALE_Y);
+    animate(@(alpha), HMBasicAnimation_OPACITY);
 }
 
 - (BOOL)indexIsValid:(int)index

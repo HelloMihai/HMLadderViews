@@ -13,7 +13,10 @@
 - (instancetype)initWithViews:(NSArray*)views
                     andHolder:(UIView*)holder
                  andTopOffset:(CGFloat)topOffset
-              andBottomOffset:(CGFloat)bottomOffset;
+              andBottomOffset:(CGFloat)bottomOffset
+              useTopNavButton:(BOOL)useTopNavButton
+           useBottomNavButton:(BOOL)useBottomNavButton
+         fadeViewsOutOfCenter:(BOOL)fadeViewsOutOfCenter;
 - (void)showViewIndex:(int)index;
 - (void)showViewIndex:(int)index withAnimationTime:(NSTimeInterval)animationTime;
 - (void)showNext;

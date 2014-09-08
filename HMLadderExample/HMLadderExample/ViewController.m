@@ -30,7 +30,10 @@
         _ladder = [[HMLadderViews alloc] initWithViews:self.ladderViews
                                              andHolder:self.view
                                           andTopOffset:50
-                                       andBottomOffset:50];
+                                       andBottomOffset:50
+                                       useTopNavButton:YES
+                                    useBottomNavButton:YES
+                                  fadeViewsOutOfCenter:YES];
     return _ladder;
 }
 
@@ -50,14 +53,14 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
+    // Do any additional setup after loading the view, typically from a nib.
 }
 
--(void)viewDidAppear:(BOOL)animated
+- (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    
-    int firstCardIndex = (int) ([self.ladderViews count]-1);
+
+    int firstCardIndex = (int)([self.ladderViews count] - 1);
     [self.ladder showViewIndex:firstCardIndex withAnimationTime:0];
 }
 
