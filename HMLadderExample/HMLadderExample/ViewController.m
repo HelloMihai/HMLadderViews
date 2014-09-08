@@ -33,7 +33,8 @@
                                        andBottomOffset:50
                                        useTopNavButton:YES
                                     useBottomNavButton:YES
-                                  fadeViewsOutOfCenter:YES];
+                                  fadeViewsOutOfCenter:YES
+                                useSwipesForNavigation:YES];
     return _ladder;
 }
 

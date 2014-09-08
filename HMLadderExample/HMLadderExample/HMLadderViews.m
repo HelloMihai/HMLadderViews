@@ -66,6 +66,7 @@ static CGFloat const ALPHA_STEP = 0.3;
               useTopNavButton:(BOOL)useTopNavButton
            useBottomNavButton:(BOOL)useBottomNavButton
          fadeViewsOutOfCenter:(BOOL)fadeViewsOutOfCenter
+       useSwipesForNavigation:(BOOL)useSwipesForNavigation
 {
     if (self = [super init]) {
         self.holder = holder;
@@ -78,6 +79,15 @@ static CGFloat const ALPHA_STEP = 0.3;
 
         [holder addSubview:self.itemButtonTop];
         [holder addSubview:self.itemButtonBottom];
+
+        if (useSwipesForNavigation) {
+            UISwipeGestureRecognizer* swipeUp = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(gestureSwipeUp:)];
+            UISwipeGestureRecognizer* swipeDown = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(gestureSwipeDown:)];
+            swipeUp.direction = UISwipeGestureRecognizerDirectionUp;
+            swipeDown.direction = UISwipeGestureRecognizerDirectionDown;
+            [holder addGestureRecognizer:swipeUp];
+            [holder addGestureRecognizer:swipeDown];
+        }
     }
     return self;
 }
@@ -176,6 +186,16 @@ static CGFloat const ALPHA_STEP = 0.3;
 }
 
 #pragma helpers
+
+- (void)gestureSwipeUp:(UISwipeGestureRecognizer*)recognizer
+{
+    [self showNext];
+}
+
+- (void)gestureSwipeDown:(UISwipeGestureRecognizer*)recognizer
+{
+    [self showPrevious];
+}
 
 - (CGFloat)viewScaledHeight:(UIView*)view
 {

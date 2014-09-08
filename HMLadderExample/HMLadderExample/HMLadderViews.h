@@ -16,7 +16,8 @@
               andBottomOffset:(CGFloat)bottomOffset
               useTopNavButton:(BOOL)useTopNavButton
            useBottomNavButton:(BOOL)useBottomNavButton
-         fadeViewsOutOfCenter:(BOOL)fadeViewsOutOfCenter;
+         fadeViewsOutOfCenter:(BOOL)fadeViewsOutOfCenter
+       useSwipesForNavigation:(BOOL)useSwipesForNavigation;
 - (void)showViewIndex:(int)index;
 - (void)showViewIndex:(int)index withAnimationTime:(NSTimeInterval)animationTime;
 - (void)showNext;
