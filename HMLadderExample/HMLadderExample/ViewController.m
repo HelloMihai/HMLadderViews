@@ -50,7 +50,7 @@
 
 -(void)viewDidLayoutSubviews
 {
-    [super viewDidLayoutSubviews];
+    [self.view layoutIfNeeded];
     [self.ladder initializeOnceToViewIndex:0]; // 0 for the first view index
 }
 
