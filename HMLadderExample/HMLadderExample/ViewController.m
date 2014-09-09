@@ -26,49 +26,32 @@
 
 - (HMLadderViews*)ladder
 {
-    if (!_ladder)
-        _ladder = [[HMLadderViews alloc] initWithViews:self.ladderViews
+    if (!_ladder) {
+        // view orders matters how they are displayed
+        NSArray* views = @[ self.ladderView5,
+                            self.ladderView4,
+                            self.ladderView3,
+                            self.ladderView2,
+                            self.ladderView1 ];
+        _ladder = [[HMLadderViews alloc] initWithViews:views
                                              andHolder:self.view
                                           andTopOffset:50
                                        andBottomOffset:50
                                        useTopNavButton:YES
                                     useBottomNavButton:YES
                                   fadeViewsOutOfCenter:YES
-                                useSwipesForNavigation:YES];
+                                useSwipesForNavigation:YES
+                                     maxEdgeViewHeight:50];
+    }
     return _ladder;
-}
-
-- (NSArray*)ladderViews
-{
-    if (!_ladderViews)
-        _ladderViews = @[ self.ladderView5,
-                          self.ladderView4,
-                          self.ladderView3,
-                          self.ladderView2,
-                          self.ladderView1 ];
-    return _ladderViews;
 }
 
 #pragma mark : view controller life cycle
 
-- (void)viewDidLoad
+-(void)viewDidLayoutSubviews
 {
-    [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
-}
-
-- (void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
-
-    int firstCardIndex = (int)([self.ladderViews count] - 1);
-    [self.ladder showViewIndex:firstCardIndex withAnimationTime:0];
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+    [super viewDidLayoutSubviews];
+    [self.ladder initializeOnceToViewIndex:0]; // 0 for the first view index
 }
 
 #pragma mark : actions

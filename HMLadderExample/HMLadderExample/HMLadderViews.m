@@ -11,7 +11,7 @@
 
 static NSTimeInterval const ANIMATION_TIME_TO_CENTER = 0.5;
 static NSTimeInterval const ANIMATION_TIME_TO_EDGE = ANIMATION_TIME_TO_CENTER * 1.5;
-static CGFloat const EDGE_SCALE = 0.4;
+static CGFloat const EDGE_VIEW_SCALE = 0.4;
 static CGFloat const ALPHA_STEP = 0.3;
 
 @interface HMLadderViews ()
@@ -26,6 +26,8 @@ static CGFloat const ALPHA_STEP = 0.3;
 @property (nonatomic) BOOL useTopNavButton;
 @property (nonatomic) BOOL useBottomNavButton;
 @property (nonatomic) BOOL fadeViewsOutOfCenter;
+@property (nonatomic) BOOL firstTimeViewPending;
+@property (nonatomic) CGFloat maxEdgeViewHeight;
 @end
 
 @implementation HMLadderViews
@@ -35,7 +37,8 @@ static CGFloat const ALPHA_STEP = 0.3;
 - (CGSize)windowSize
 {
     if (CGSizeEqualToSize(_windowSize, CGSizeZero)) // not set
-        _windowSize = [[UIApplication sharedApplication] keyWindow].frame.size;
+        _windowSize = [UIScreen mainScreen].bounds.size;
+//        _windowSize = [[UIApplication sharedApplication] keyWindow].frame.size;
     return _windowSize;
 }
 
@@ -67,8 +70,10 @@ static CGFloat const ALPHA_STEP = 0.3;
            useBottomNavButton:(BOOL)useBottomNavButton
          fadeViewsOutOfCenter:(BOOL)fadeViewsOutOfCenter
        useSwipesForNavigation:(BOOL)useSwipesForNavigation
+            maxEdgeViewHeight:(CGFloat)maxEdgeViewHeight
 {
     if (self = [super init]) {
+        self.firstTimeViewPending = true;
         self.holder = holder;
         self.views = views;
         self.offsetTop = topOffset;
@@ -76,10 +81,11 @@ static CGFloat const ALPHA_STEP = 0.3;
         self.useTopNavButton = useTopNavButton;
         self.useBottomNavButton = useBottomNavButton;
         self.fadeViewsOutOfCenter = fadeViewsOutOfCenter;
-
+        self.maxEdgeViewHeight = maxEdgeViewHeight;
+        
         [holder addSubview:self.itemButtonTop];
         [holder addSubview:self.itemButtonBottom];
-
+        
         if (useSwipesForNavigation) {
             UISwipeGestureRecognizer* swipeUp = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(gestureSwipeUp:)];
             UISwipeGestureRecognizer* swipeDown = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(gestureSwipeDown:)];
@@ -92,6 +98,19 @@ static CGFloat const ALPHA_STEP = 0.3;
     return self;
 }
 
+-(void)initializeOnceToViewIndex:(int)index
+{
+    if (self.firstTimeViewPending && [self indexIsValid:index]) {
+        self.firstTimeViewPending = false;
+        [self showViewIndex:index withAnimationTime:0];
+    }
+}
+
+-(void)repositionToCurrentIndex
+{
+    [self showViewIndex:self.currentViewIndex withAnimationTime:0];
+}
+
 - (void)showViewIndex:(int)index
 {
     [self showViewIndex:index withAnimationTime:ANIMATION_TIME_TO_EDGE];
@@ -100,27 +119,29 @@ static CGFloat const ALPHA_STEP = 0.3;
 - (void)showViewIndex:(int)index withAnimationTime:(NSTimeInterval)animationTime
 {
     if ([self indexIsValid:index]) {
+        NSLog(@"window size %f %f", self.windowSize.height, self.holder.frame.size.height);
         self.currentViewIndex = index;
-
+        
         self.itemButtonTop.hidden = YES;
         self.itemButtonBottom.hidden = YES;
-
+        
         // instances
         CGFloat xCoord = self.windowSize.width / 2;
         CGFloat wHeight = self.windowSize.height;
-
+        
         UIView* view;
         CGPoint coords = CGPointMake(xCoord, 0);
         BOOL firstAtEdge = true;
         CGFloat priorViewEdgeY = 0;
         CGFloat viewScaledHeightHalf;
         CGFloat alpha = 1;
-
+        CGFloat viewScale;
+        
         // move to center
         view = [self.views objectAtIndex:index];
         coords.y = wHeight / 2;
         [self animateView:view toCoods:coords withTime:animationTime withScale:1 withAlpha:alpha];
-
+        
         // align above
         for (int i = index - 1; i >= 0; i--) {
             view = [self.views objectAtIndex:i];
@@ -135,9 +156,10 @@ static CGFloat const ALPHA_STEP = 0.3;
             firstAtEdge = false;
             priorViewEdgeY = coords.y - viewScaledHeightHalf;
             alpha = self.fadeViewsOutOfCenter ? alpha - ALPHA_STEP : 1;
-            [self animateView:view toCoods:coords withTime:animationTime withScale:EDGE_SCALE withAlpha:alpha];
+            viewScale = [self scaleForEdgeView:view];
+            [self animateView:view toCoods:coords withTime:animationTime withScale:viewScale withAlpha:alpha];
         }
-
+        
         // align bottom
         firstAtEdge = true;
         alpha = 1;
@@ -154,7 +176,8 @@ static CGFloat const ALPHA_STEP = 0.3;
             firstAtEdge = false;
             priorViewEdgeY = coords.y + viewScaledHeightHalf;
             alpha = self.fadeViewsOutOfCenter ? alpha - ALPHA_STEP : 1;
-            [self animateView:view toCoods:coords withTime:animationTime withScale:EDGE_SCALE withAlpha:alpha];
+            viewScale = [self scaleForEdgeView:view];
+            [self animateView:view toCoods:coords withTime:animationTime withScale:viewScale withAlpha:alpha];
         }
     }
 }
@@ -175,6 +198,8 @@ static CGFloat const ALPHA_STEP = 0.3;
         [self showViewIndex:self.currentViewIndex - 1];
 }
 
+#pragma helpers
+
 - (void)bounceCurrentView:(CGFloat)yOffset
 {
     UIView* view = [self.views objectAtIndex:self.currentViewIndex];
@@ -184,8 +209,6 @@ static CGFloat const ALPHA_STEP = 0.3;
     [HMBasicAnimation animate:view.layer toValue:@(toY) duration:duration delaySeconds:0.0 keyPath:HMBasicAnimation_POSITION_Y withEase:HMBasicAnimation_EASING_EASE_IN_OUT];
     [HMBasicAnimation animate:view.layer toValue:@(originalY) duration:duration / 2 delaySeconds:duration keyPath:HMBasicAnimation_POSITION_Y withEase:HMBasicAnimation_EASING_EASE_IN_OUT];
 }
-
-#pragma helpers
 
 - (void)gestureSwipeUp:(UISwipeGestureRecognizer*)recognizer
 {
@@ -200,13 +223,25 @@ static CGFloat const ALPHA_STEP = 0.3;
 - (CGFloat)viewScaledHeight:(UIView*)view
 {
     CGFloat yScale = view.transform.d;
-    return (yScale == 1) ? view.frame.size.height * EDGE_SCALE : view.frame.size.height;
+    CGFloat viewScale = [self scaleForEdgeView:view];
+    return (yScale == 1) ? view.frame.size.height * viewScale : view.frame.size.height;
 }
 
 - (CGFloat)viewFullNotScaledHeight:(UIView*)view
 {
     CGFloat yScale = view.transform.d;
-    return (yScale == 1) ? view.frame.size.height : view.frame.size.height / EDGE_SCALE;
+    return (yScale == 1) ? view.frame.size.height : view.frame.size.height / yScale;
+}
+
+-(CGFloat)scaleForEdgeView:(UIView*)view
+{
+    CGFloat fullHeight = [self viewFullNotScaledHeight:view];
+    // scaled height should be less than the max height allowed
+    if (fullHeight * EDGE_VIEW_SCALE < self.maxEdgeViewHeight)
+        return EDGE_VIEW_SCALE;
+    else { // current scale is too big need to recalculate
+        return self.maxEdgeViewHeight / fullHeight; // ratio to produce max height
+    }
 }
 
 - (void)setBottomButtonToView:(UIView*)view atCoords:(CGPoint)coords
@@ -238,7 +273,7 @@ static CGFloat const ALPHA_STEP = 0.3;
     if (alpha < 0)
         alpha = 0;
     void (^animate)(id toValue, NSString * key) = ^void(id toValue, NSString* key) {
-            [HMBasicAnimation animate:view.layer toValue:toValue duration:time delaySeconds:0 keyPath:key withEase:HMBasicAnimation_EASING_EASE_IN_OUT];
+        [HMBasicAnimation animate:view.layer toValue:toValue duration:time delaySeconds:0 keyPath:key withEase:HMBasicAnimation_EASING_EASE_IN_OUT];
     };
     animate(@(coords.x), HMBasicAnimation_POSITION_X);
     animate(@(coords.y), HMBasicAnimation_POSITION_Y);

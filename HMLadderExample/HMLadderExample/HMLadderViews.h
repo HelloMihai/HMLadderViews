@@ -17,7 +17,10 @@
               useTopNavButton:(BOOL)useTopNavButton
            useBottomNavButton:(BOOL)useBottomNavButton
          fadeViewsOutOfCenter:(BOOL)fadeViewsOutOfCenter
-       useSwipesForNavigation:(BOOL)useSwipesForNavigation;
+       useSwipesForNavigation:(BOOL)useSwipesForNavigation
+            maxEdgeViewHeight:(CGFloat)maxEdgeViewHeight;
+- (void)initializeOnceToViewIndex:(int)index;
+- (void)repositionToCurrentIndex;
 - (void)showViewIndex:(int)index;
 - (void)showViewIndex:(int)index withAnimationTime:(NSTimeInterval)animationTime;
 - (void)showNext;

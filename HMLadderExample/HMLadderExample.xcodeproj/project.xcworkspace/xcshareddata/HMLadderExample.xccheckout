@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>F6D58338-69B7-428B-99FF-13365F281A25</string>
+	<key>IDESourceControlProjectName</key>
+	<string>HMLadderExample</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>AB1E1201-5A75-4BA2-A39B-EBB040E2DD07</key>
+		<string>https://github.com/HelloMihai/HMLadderViews.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>HMLadderExample/HMLadderExample.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>AB1E1201-5A75-4BA2-A39B-EBB040E2DD07</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/HelloMihai/HMLadderViews.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>AB1E1201-5A75-4BA2-A39B-EBB040E2DD07</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>AB1E1201-5A75-4BA2-A39B-EBB040E2DD07</string>
+			<key>IDESourceControlWCCName</key>
+			<string>HMLadder</string>
+		</dict>
+	</array>
+</dict>
+</plist>
