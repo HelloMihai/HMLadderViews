@@ -38,7 +38,6 @@ static CGFloat const ALPHA_STEP = 0.3;
 {
     if (CGSizeEqualToSize(_windowSize, CGSizeZero)) // not set
         _windowSize = [UIScreen mainScreen].bounds.size;
-//        _windowSize = [[UIApplication sharedApplication] keyWindow].frame.size;
     return _windowSize;
 }
 
@@ -119,7 +118,6 @@ static CGFloat const ALPHA_STEP = 0.3;
 - (void)showViewIndex:(int)index withAnimationTime:(NSTimeInterval)animationTime
 {
     if ([self indexIsValid:index]) {
-        NSLog(@"window size %f %f", self.windowSize.height, self.holder.frame.size.height);
         self.currentViewIndex = index;
         
         self.itemButtonTop.hidden = YES;
