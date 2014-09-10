@@ -51,7 +51,8 @@
 -(void)viewDidLayoutSubviews
 {
     [self.view layoutIfNeeded];
-    [self.ladder initializeOnceToViewIndex:0]; // 0 for the first view index
+    int indexOfFirstViewToShow = [self.ladder lastViewIndex];
+    [self.ladder initializeOnceToViewIndex:indexOfFirstViewToShow];
 }
 
 #pragma mark : actions

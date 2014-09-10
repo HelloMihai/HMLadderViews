@@ -20,6 +20,7 @@
        useSwipesForNavigation:(BOOL)useSwipesForNavigation
             maxEdgeViewHeight:(CGFloat)maxEdgeViewHeight;
 - (void)initializeOnceToViewIndex:(int)index;
+- (int)lastViewIndex;
 - (void)repositionToCurrentIndex;
 - (void)showViewIndex:(int)index;
 - (void)showViewIndex:(int)index withAnimationTime:(NSTimeInterval)animationTime;

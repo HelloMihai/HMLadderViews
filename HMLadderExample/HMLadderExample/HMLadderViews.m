@@ -105,6 +105,13 @@ static CGFloat const ALPHA_STEP = 0.3;
     }
 }
 
+-(int)lastViewIndex
+{
+    if (self.views)
+        return (int)[self.views count]-1;
+    return 0;
+}
+
 -(void)repositionToCurrentIndex
 {
     [self showViewIndex:self.currentViewIndex withAnimationTime:0];
