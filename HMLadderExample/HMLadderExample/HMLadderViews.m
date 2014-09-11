@@ -28,6 +28,7 @@ static CGFloat const ALPHA_STEP = 0.3;
 @property (nonatomic) BOOL fadeViewsOutOfCenter;
 @property (nonatomic) BOOL firstTimeViewPending;
 @property (nonatomic) CGFloat maxEdgeViewHeight;
+@property (nonatomic, copy) void (^indexChanged)(int index);
 @end
 
 @implementation HMLadderViews
@@ -127,6 +128,9 @@ static CGFloat const ALPHA_STEP = 0.3;
     if ([self indexIsValid:index]) {
         self.currentViewIndex = index;
         
+        if (self.indexChanged)
+            self.indexChanged(index);
+        
         self.itemButtonTop.hidden = YES;
         self.itemButtonBottom.hidden = YES;
         
@@ -185,6 +189,11 @@ static CGFloat const ALPHA_STEP = 0.3;
             [self animateView:view toCoods:coords withTime:animationTime withScale:viewScale withAlpha:alpha];
         }
     }
+}
+
+- (void)currentIndexChangedBlock:(void (^)(int index))block
+{
+    self.indexChanged = block;
 }
 
 - (void)showNext

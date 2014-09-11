@@ -42,6 +42,10 @@
                                   fadeViewsOutOfCenter:YES
                                 useSwipesForNavigation:YES
                                      maxEdgeViewHeight:50];
+        
+        [_ladder currentIndexChangedBlock:^(int index) {
+            NSLog(@"ladder current index changed to %d", index);
+        }];
     }
     return _ladder;
 }

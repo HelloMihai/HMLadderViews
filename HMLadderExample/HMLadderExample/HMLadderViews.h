@@ -26,5 +26,6 @@
 - (void)showViewIndex:(int)index withAnimationTime:(NSTimeInterval)animationTime;
 - (void)showNext;
 - (void)showPrevious;
+- (void)currentIndexChangedBlock:(void (^)(int index))block;
 
 @end
