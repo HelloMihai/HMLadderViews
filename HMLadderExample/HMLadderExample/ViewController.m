@@ -55,8 +55,7 @@
 -(void)viewDidLayoutSubviews
 {
     [self.view layoutIfNeeded];
-    int indexOfFirstViewToShow = [self.ladder lastViewIndex];
-    [self.ladder initializeOnceToViewIndex:indexOfFirstViewToShow];
+    [self.ladder initializeOnceToViewIndex:HMLADDER_VIEW_ANIMATED_TO_CENTER_FIRST];
 }
 
 #pragma mark : actions

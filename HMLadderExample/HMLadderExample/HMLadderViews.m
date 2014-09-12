@@ -82,10 +82,10 @@ static CGFloat const ALPHA_STEP = 0.3;
         self.useBottomNavButton = useBottomNavButton;
         self.fadeViewsOutOfCenter = fadeViewsOutOfCenter;
         self.maxEdgeViewHeight = maxEdgeViewHeight;
-        
+
         [holder addSubview:self.itemButtonTop];
         [holder addSubview:self.itemButtonBottom];
-        
+
         if (useSwipesForNavigation) {
             UISwipeGestureRecognizer* swipeUp = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(gestureSwipeUp:)];
             UISwipeGestureRecognizer* swipeDown = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(gestureSwipeDown:)];
@@ -98,22 +98,35 @@ static CGFloat const ALPHA_STEP = 0.3;
     return self;
 }
 
--(void)initializeOnceToViewIndex:(int)index
+- (void)initializeOnceToViewIndex:(int)index
 {
-    if (self.firstTimeViewPending && [self indexIsValid:index]) {
+    if (self.firstTimeViewPending && ([self indexIsValid:index] || index == HMLADDER_VIEW_ANIMATED_TO_CENTER_LAST )) {
         self.firstTimeViewPending = false;
-        [self showViewIndex:index withAnimationTime:0];
+        // if the index is an edge index then
+        if (index == HMLADDER_VIEW_ANIMATED_TO_CENTER_FIRST) {
+            int overLimit = -1;
+            int last = 0;
+            [self showViewIndex:overLimit withAnimationTime:0];
+            [self showViewIndex:last withAnimationTime:ANIMATION_TIME_TO_EDGE];
+        } else if (index == HMLADDER_VIEW_ANIMATED_TO_CENTER_LAST) {
+            int overLimit = (int)[self.views count];
+            int last = (int)([self.views count]-1);
+            [self showViewIndex:overLimit withAnimationTime:0];
+            [self showViewIndex:last withAnimationTime:ANIMATION_TIME_TO_EDGE];
+        }else {
+            [self showViewIndex:index withAnimationTime:0]; // show the new index
+        }
     }
 }
 
--(int)lastViewIndex
+- (int)lastViewIndex
 {
     if (self.views)
-        return (int)[self.views count]-1;
+        return (int)[self.views count] - 1;
     return 0;
 }
 
--(void)repositionToCurrentIndex
+- (void)repositionToCurrentIndex
 {
     [self showViewIndex:self.currentViewIndex withAnimationTime:0];
 }
@@ -127,17 +140,17 @@ static CGFloat const ALPHA_STEP = 0.3;
 {
     if ([self indexIsValid:index]) {
         self.currentViewIndex = index;
-        
+
         if (self.indexChanged)
             self.indexChanged(index);
-        
+
         self.itemButtonTop.hidden = YES;
         self.itemButtonBottom.hidden = YES;
-        
+
         // instances
         CGFloat xCoord = self.windowSize.width / 2;
         CGFloat wHeight = self.windowSize.height;
-        
+
         UIView* view;
         CGPoint coords = CGPointMake(xCoord, 0);
         BOOL firstAtEdge = true;
@@ -145,12 +158,14 @@ static CGFloat const ALPHA_STEP = 0.3;
         CGFloat viewScaledHeightHalf;
         CGFloat alpha = 1;
         CGFloat viewScale;
-        
+
         // move to center
-        view = [self.views objectAtIndex:index];
-        coords.y = wHeight / 2;
-        [self animateView:view toCoods:coords withTime:animationTime withScale:1 withAlpha:alpha];
-        
+        if (index >= 0 && index < [self.views count]) {
+            view = [self.views objectAtIndex:index];
+            coords.y = wHeight / 2;
+            [self animateView:view toCoods:coords withTime:animationTime withScale:1 withAlpha:alpha];
+        }
+
         // align above
         for (int i = index - 1; i >= 0; i--) {
             view = [self.views objectAtIndex:i];
@@ -168,7 +183,7 @@ static CGFloat const ALPHA_STEP = 0.3;
             viewScale = [self scaleForEdgeView:view];
             [self animateView:view toCoods:coords withTime:animationTime withScale:viewScale withAlpha:alpha];
         }
-        
+
         // align bottom
         firstAtEdge = true;
         alpha = 1;
@@ -247,7 +262,7 @@ static CGFloat const ALPHA_STEP = 0.3;
     return (yScale == 1) ? view.frame.size.height : view.frame.size.height / yScale;
 }
 
--(CGFloat)scaleForEdgeView:(UIView*)view
+- (CGFloat)scaleForEdgeView:(UIView*)view
 {
     CGFloat fullHeight = [self viewFullNotScaledHeight:view];
     // scaled height should be less than the max height allowed
@@ -297,7 +312,9 @@ static CGFloat const ALPHA_STEP = 0.3;
 
 - (BOOL)indexIsValid:(int)index
 {
-    return (0 <= index && index < [self.views count]);
+    int min = -1;
+    int max = (int)[self.views count];
+    return min <= index && index <= max; // allow indexs one greater and smaller than the limits for "none in center"
 }
 
 @end

@@ -8,6 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
+static int HMLADDER_VIEW_ANIMATED_TO_CENTER_FIRST = -1;
+static int HMLADDER_VIEW_ANIMATED_TO_CENTER_LAST = INT_MAX;
+
 @interface HMLadderViews : NSObject
 
 - (instancetype)initWithViews:(NSArray*)views
