@@ -141,7 +141,7 @@ static CGFloat const ALPHA_STEP = 0.3;
     if ([self indexIsValid:index]) {
         self.currentViewIndex = index;
 
-        if (self.indexChanged)
+        if (self.indexChanged && index >= 0 && index < [self.views count])
             self.indexChanged(index);
 
         self.itemButtonTop.hidden = YES;
